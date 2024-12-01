@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>결과 페이지</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            height: 100vh;
+            background-color: #000;
+            font-family: 'Helvetica Neue', Arial, sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            color: #fff;
+        }
+        header {
+            position: absolute;
+            top: 20px;
+            text-align: center;
+            width: 100%;
+        }
+        header h1 {
+            font-size: 2rem;
+            font-weight: bold;
+            letter-spacing: 3px;
+            margin: 0;
+        }
+        header hr {
+            width: 60px;
+            border: 0;
+            border-top: 1px solid #aaa;
+            margin: 10px auto 0;
+        }
+        .container {
+            text-align: left;
+            max-width: 500px;
+            padding: 20px;
+            box-sizing: border-box;
+            position: relative;
+        }
+        .result {
+            font-size: 1.1rem;
+            margin-bottom: 20px;
+            line-height: 1.6; /* 줄 간격 조정 */
+        }
+        .button-container {
+            margin-top: 30px;
+        }
+        .home-btn {
+            font-size: 1rem;
+            color: #000;
+            background: #d3d3d3;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 20px;
+            cursor: pointer;
+            text-transform: uppercase;
+            box-shadow: 0px 4px 10px rgba(211, 211, 211, 0.5);
+            transition: background-color 0.3s ease, transform 0.2s ease;
+        }
+        .home-btn:hover {
+            background: #bfbfbf;
+            transform: scale(1.05);
+        }
+        .home-btn:active {
+            background: #a5a5a5;
+            transform: scale(1);
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>視香</h1>
+        <hr>
+    </header>
+    <div class="container">
+        <h2>설문 결과</h2>
+        <div id="result" class="result"></div>
+        <div class="button-container">
+            <button class="home-btn" onclick="goHome()">메인 페이지로 돌아가기</button>
+        </div>
+    </div>
+
+    <script>
+        window.onload = function() {
+            const resultContainer = document.getElementById('result');
+            const answers = JSON.parse(localStorage.getItem('surveyAnswers'));
+
+            if (answers) {
+                const questions = [
+                    "Q1. 당신은/그 사람은 어떤 분위기의 사람인가요?",
+                    "Q2. 이 향기가 표현하는 사람의 나이대와 스타일은?",
+                    "Q3. 이 향기가 가장 잘 어울리는 장소는 어디인가요?",
+                    "Q4. 이 향기가 떠오르게 하는 계절은 언제인가요?",
+                    "Q5. 이 향기의 날씨는 어떤 모습인가요?",
+                    "Q6. 이 향기를 가장 잘 표현하는 시간대는 언제인가요?"
+                ];
+
+                let resultText = '';
+                answers.forEach((answer, index) => {
+                    resultText += `${questions[index]}\n- ${answer}\n\n`;
+                });
+
+                resultContainer.textContent = resultText;
+            } else {
+                resultContainer.textContent = '결과가 없습니다.';
+            }
+
+            // 서버로 결과 전송 (선택 사항)
+            sendResultsToServer(answers);
+        }
+
+        function goHome() {
+            window.location.href = "index.html"; // 메인 페이지로 돌아가기
+        }
+
+        // 서버로 결과 전송
+        function sendResultsToServer(results) {
+            fetch('YOUR_SERVER_URL', { // 실제 서버 URL로 교체
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ results })
+            })
+            .then(response => response.json())
+            .then(data => {
+                console.log('성공:', data);
+            })
+            .catch((error) => {
+                console.error('에러:', error);
+            });
+        }
+    </script>
+</body>
+</html>

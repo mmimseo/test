@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Survey</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            height: 100vh;
+            background-color: #000; /* 검정색 배경 */
+            font-family: 'Helvetica Neue', Arial, sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            color: #fff; /* 흰색 텍스트 */
+        }
+        header {
+            position: absolute;
+            top: 20px;
+            text-align: center;
+            width: 100%;
+        }
+        header h1 {
+            font-size: 2rem;
+            font-weight: bold;
+            letter-spacing: 3px;
+            margin: 0;
+        }
+        header hr {
+            width: 60px;
+            border: 0;
+            border-top: 1px solid #aaa; /* 얇은 회색 줄 */
+            margin: 10px auto 0;
+        }
+        .container {
+            text-align: center;
+            max-width: 500px;
+            padding: 20px;
+            box-sizing: border-box;
+            position: relative; /* 자식 요소 위치 고정 */
+        }
+        .question {
+            font-size: 1.3rem;
+            margin-bottom: 20px;
+        }
+        .options {
+            margin-bottom: 30px;
+            display: flex;
+            justify-content: center;
+            gap: 30px; /* 버튼 간격 추가 */
+        }
+        .option-btn, .input-field {
+            font-size: 1rem;
+            color: #000;
+            background: #d3d3d3; /* 밝은 회색 버튼 */
+            padding: 10px 20px;
+            border: none;
+            border-radius: 20px;
+            text-transform: uppercase;
+            box-shadow: 0px 4px 10px rgba(211, 211, 211, 0.5);
+            margin: 10px;
+        }
+        .option-btn:hover {
+            background: #bfbfbf;
+            transform: scale(1.05);
+        }
+        .option-btn:active {
+            background: #a5a5a5;
+            transform: scale(1);
+        }
+        .option-btn.selected {
+            background: #555555; /* 선택된 상태 표시 */
+            color: #fff;
+            box-shadow: 0px 4px 10px #505050;
+        }
+        .input-field {
+            width: 80%; /* 입력 필드 너비 */
+            margin: 10px auto;
+        }
+        .next-btn {
+            font-size: 1rem;
+            color: #000;
+            background: #d3d3d3;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 20px;
+            cursor: pointer;
+            text-transform: uppercase;
+            box-shadow: 0px 4px 10px rgba(211, 211, 211, 0.5);
+            transition: background-color 0.3s ease, transform 0.2s ease;
+            margin-top: 20px;
+        }
+        .next-btn:hover {
+            background: #bfbfbf;
+            transform: scale(1.05);
+        }
+        .next-btn:active {
+            background: #a5a5a5;
+            transform: scale(1);
+        }
+        .progress-bar-container {
+            width: 100%;
+            height: 6px;
+            max-width: 450px;
+            background-color: #333;
+            border-radius: 5px;
+            overflow: hidden;
+            margin-top: 20px;
+            position: absolute;
+            bottom: 0;
+        }
+        .progress-bar {
+            height: 100%;
+            width: 0;
+            background-color: #555;
+            transition: width 0.3s ease;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>視香</h1>
+        <hr>
+    </header>
+    <div class="container">
+        <p class="question" id="question-text"></p>
+        <div id="input-container"></div>
+        <div id="options-container"></div>
+        <button class="next-btn" id="next-btn" onclick="nextQuestion()">Next</button>
+        <div class="progress-bar-container">
+            <div class="progress-bar" id="progress-bar"></div>
+        </div>
+    </div>
+
+    <script>
+        const questions = [
+            { text: "Q1. 당신은/그 사람은 어떤 분위기의 사람인가요?", type: "input" },
+            { text: "Q2. 이 향기가 표현하는 사람의 나이대와 스타일을 적어주세요.", type: "input" },
+            { text: "Q3. 이 향기가 가장 잘 어울리는 장소는 어디인가요?", type: "input" },
+            { text: "Q4. 이 향기가 떠오르게 하는 계절은 언제인가요?", options: ["봄", "여름", "가을", "겨울"] },
+            { text: "Q5. 이 향기의 날씨는 어떤 모습인가요?", options: ["맑은 날", "비 오는 날"] },
+            { text: "Q6. 이 향기를 가장 잘 표현하는 시간대는 언제인가요?", options: ["아침", "점심", "저녁", "새벽"] }
+        ];
+
+        let currentQuestionIndex = 0;
+        const answers = [];
+
+        const questionText = document.getElementById('question-text');
+        const optionsContainer = document.getElementById('options-container');
+        const inputContainer = document.getElementById('input-container');
+        const nextBtn = document.getElementById('next-btn');
+        const progressBar = document.getElementById('progress-bar');
+
+        function loadQuestion() {
+            const question = questions[currentQuestionIndex];
+            questionText.textContent = question.text;
+
+            inputContainer.innerHTML = '';
+            optionsContainer.innerHTML = '';
+
+            if (question.type === "input") {
+                const input = document.createElement('input');
+                input.type = 'text';
+                input.className = 'input-field';
+                input.placeholder = "답변을 입력해주세요";
+                input.id = 'user-input';
+                inputContainer.appendChild(input);
+            } else {
+                question.options.forEach(option => {
+                    const btn = document.createElement('button');
+                    btn.textContent = option;
+                    btn.classList.add('option-btn');
+                    btn.onclick = () => selectOption(option, btn);
+                    optionsContainer.appendChild(btn);
+                });
+            }
+
+            updateProgressBar();
+        }
+
+        function selectOption(answer, button) {
+            answers[currentQuestionIndex] = answer;
+            const allButtons = document.querySelectorAll('.option-btn');
+            allButtons.forEach(btn => btn.classList.remove('selected'));
+            button.classList.add('selected');
+        }
+
+        function nextQuestion() {
+            const question = questions[currentQuestionIndex];
+
+            if (question.type === "input") {
+                const input = document.getElementById('user-input').value;
+                if (!input) {
+                    alert("답변을 입력해주세요!");
+                    return;
+                }
+                answers[currentQuestionIndex] = input;
+            } else if (!answers[currentQuestionIndex]) {
+                alert("선택지를 선택해주세요!");
+                return;
+            }
+
+            if (currentQuestionIndex < questions.length - 1) {
+                currentQuestionIndex++;
+                loadQuestion();
+            } else {
+                submitSurvey();
+            }
+        }
+
+        function updateProgressBar() {
+            const progress = ((currentQuestionIndex + 1) / questions.length) * 100;
+            progressBar.style.width = `${progress}%`;
+        }
+
+        function submitSurvey() {
+            console.log("Survey answers: ", answers);
+            window.location.href = "result.html";
+        }
+
+        loadQuestion();
+    </script>
+</body>
+</html>
